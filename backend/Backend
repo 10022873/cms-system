@@ -1,0 +1,8 @@
+# backend/Dockerfile
+FROM node:16-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3001  # Match your backend port (e.g., 3001)
+CMD ["node", "server.js"]  # Replace "server.js" with your entry file (e.g., "app.js")
