@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticate, authorize } = require('../middleware/auth');
 const Consent = require('../models/Consent');
-const notificationService = require('../services/notification');
+const notificationService = require('../services/notifications');
 const audit = require('../middleware/audit');
 
 // Create new consent request
