@@ -50,7 +50,6 @@ router.get('/',
     }
 });
 
-// Update consent status
 router.patch('/:id', 
   authenticate, 
   authorize('DataFiduciary', 'Admin'), 
@@ -59,5 +58,34 @@ router.patch('/:id',
     try {
       const updates = Object.keys(req.body);
       const allowedUpdates = ['status', 'expiryDate'];
-      
-      const isValidOperation
+      const isValidOperation = updates.every(update => allowedUpdates.includes(update));
+
+      if (!isValidOperation) {
+        return res.status(400).send({ error: 'Invalid updates!' });
+      }
+
+      const consent = await Consent.findOneAndUpdate(
+        { _id: req.params.id, fiduciaryId: req.user._id },
+        req.body,
+        { new: true, runValidators: true }
+      );
+
+      if (!consent) {
+        return res.status(404).send();
+      }
+
+      // Notify user if status changed
+      if (req.body.status) {
+        await notificationService.sendEmail(
+          consent.principalId.email,
+          'Consent Status Updated',
+          `Your consent for ${consent.purpose} is now ${req.body.status}`
+        );
+      }
+
+      res.send(consent);
+    } catch (err) {
+      res.status(400).send(err);
+    }
+  }
+);
